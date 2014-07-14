@@ -1,7 +1,10 @@
 package com.github.mtailor.srtplayground
 
+import java.io.{File, FileOutputStream}
+
 import akka.actor.ActorSystem
 import spray.client.pipelining._
+import spray.http.HttpEntity.NonEmpty
 import spray.http.HttpHeaders.Cookie
 import spray.http._
 
@@ -23,11 +26,33 @@ object Main extends App with SubsceneToolbox {
 
   def hit(url: String): Future[HttpResponse] = {
     println(f"Requesting $url")
-    pipeline(Get(url)) map { res =>
-      println(f"OK $url")
-      res
+    pipeline(Get(url)) andThen {
+      case _ =>  println(f"OK $url")
     }
   }
+
+  def hitForString(url: String): Future[String] =
+    hit(url) map (_.entity.asString)
+
+  def hitForBytes(url: String) =
+    hit(url) map (_.entity match {
+      case NonEmpty(contentType, data) => data.toByteArray
+      case _ => throw new RuntimeException("The body was empty")
+    })
+
+    def writeToFile(bytes: Array[Byte], filePath: String) = {
+      println(f"writing into file $filePath")
+      val fos = new FileOutputStream(new File(filePath))
+      try {
+        fos.write(bytes)
+      } finally {
+        fos.close()
+      }
+    }
+
+  def filePathForId(id: String) =
+    "/home/manu/dev/writes/" + id + ".srt"
+
 
 
   val url = "http://subscene.com/subtitles/game-of-thrones-first-season"
@@ -58,13 +83,21 @@ object Main extends App with SubsceneToolbox {
   }
 
 
+  var cpt = 0
 
-  futureDownloadLinks andThen {
+
+  futureDownloadLinks map {
     case links => {
-      links foreach println
-      system.shutdown()
+      links map { link =>
+        hitForBytes(url) foreach { bytes =>
+         cpt += 1
+         writeToFile(bytes, filePathForId(cpt.toString))
+        }
+      }
     }
   }
+
+
 
 
 
