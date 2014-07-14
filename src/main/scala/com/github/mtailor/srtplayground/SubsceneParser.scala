@@ -5,36 +5,37 @@ import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
 
-trait SubsceneToolbox {
+trait SubsceneParser {
 
-  def extractLinks(bodyOfMediaPage: String): Iterable[Element] =
+  def extractLinksOfMediaPage(bodyOfMediaPage: String): Iterable[Element] =
     Jsoup
       .parse(bodyOfMediaPage)
       .select(".subtitles table td.a1 a")
       .asScala
 
-  def extractDownloadLink(bodyOfSubtitlePage: String): String =
-    Jsoup
+  def extractDownloadUrlOfSubtitlePage(bodyOfSubtitlePage: String): String =
+    extractUrlOfLink(
+      Jsoup
       .parse(bodyOfSubtitlePage)
       .select(".download a")
-      .attr("href")
-  
-  def extractId(link: Element): String =
-    link
-      .attr("href")
+      .first()
+    )
+
+  def extractIdOfLinkToSubtitle(link: Element): String =
+    extractUrlOfLink(link)
       .replaceAll("""^.*/(\d{6})$""", "$1")
 
-  def extractUrl(link: Element): String =
+  def extractUrlOfLink(link: Element): String =
     link
       .attr("href")
 
-  def extractName(link: Element): String =
+  def extractTextOfLink(link: Element): String =
     link
       .select("span:last-child")
       .text()
       .trim()
 
-  def matchSeasonAndEpisode(name: String, season: Int, episode: Int) =
+  def isForSeasonAndEpisode(name: String, season: Int, episode: Int) =
     name
       .toLowerCase
       .contains(f"s$season%02de$episode%02d")
