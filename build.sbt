@@ -18,6 +18,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2"
 
 libraryDependencies += "org.jsoup" % "jsoup" % "1.7.3"
 
+libraryDependencies += "net.lingala.zip4j" % "zip4j" % "1.3.2"
+
 
 scalacOptions ++= Seq(
   "-feature",

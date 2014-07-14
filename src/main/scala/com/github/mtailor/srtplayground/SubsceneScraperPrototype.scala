@@ -1,6 +1,6 @@
 package com.github.mtailor.srtplayground
 
-import com.github.mtailor.srtplayground.utils.{SubsceneParser, SubsceneCaller, FilesToolbox}
+import com.github.mtailor.srtplayground.utils.{FilesToolbox, SubsceneCaller, SubsceneParser}
 
 import scala.concurrent.Future
 
