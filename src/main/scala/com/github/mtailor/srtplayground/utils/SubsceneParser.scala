@@ -1,4 +1,4 @@
-package com.github.mtailor.srtplayground
+package com.github.mtailor.srtplayground.utils
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element

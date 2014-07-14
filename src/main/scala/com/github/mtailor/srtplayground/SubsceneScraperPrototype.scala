@@ -1,8 +1,10 @@
 package com.github.mtailor.srtplayground
 
+import com.github.mtailor.srtplayground.utils.{SubsceneParser, SubsceneCaller, FilesToolbox}
+
 import scala.concurrent.Future
 
-object Main extends App with SubsceneParser with SubsceneCaller with FilesToolbox {
+object SubsceneScraperPrototype extends App with SubsceneParser with SubsceneCaller with FilesToolbox {
 
   val mediaUrl = "/subtitles/game-of-thrones-first-season"
 

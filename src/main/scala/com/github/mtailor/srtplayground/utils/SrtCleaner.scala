@@ -1,6 +1,6 @@
-package com.github.mtailor.srtplayground
+package com.github.mtailor.srtplayground.utils
 
-import com.github.mtailor.srtdissector.Vocabulary.{SubtitleBlock, Srt}
+import com.github.mtailor.srtdissector.Vocabulary.{Srt, SubtitleBlock}
 
 trait SrtCleaner {
 

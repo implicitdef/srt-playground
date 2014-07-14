@@ -1,4 +1,4 @@
-package com.github.mtailor.srtplayground
+package com.github.mtailor.srtplayground.utils
 
 import spray.client.pipelining._
 import spray.http.HttpHeaders.Cookie
