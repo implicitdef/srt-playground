@@ -10,26 +10,80 @@ object AnalyzerProto extends App with SrtCleaner with SrtDissector with Levenhst
 
   val files: Array[File] = new File("/home/manu/dev/writes").listFiles
 
-
-  def beginning(srt: Srt): String =
+  def takeNChars(srt: Srt, n: Int): String =
     srt
-      .take(20)
       .flatMap(_.lines)
-      .mkString
+      .mkString("\n")
+      .take(n)
 
-  val t = files
-    .map(f =>
-      (
-        f.getName,
-        beginning(dissect(new FileInputStream(f)))
+  val combinationsAndSimilarityRate: Seq[(Int, Int, Float)] =
+    files
+      .map(f =>
+      (f.getName.replaceAll( """^(\d+).*$""", "$1").toInt,
+        takeNChars(dissect(new FileInputStream(f)), 1000)
+        )
       )
-    )
-    .combinations(2)
-    .map { case Array((name1, s1), (name2, s2)) =>
-      (similarityRate(s1, s2), f"$name1 => $name2")
+      .combinations(2)
+      .map { case Array((id1, s1), (id2, s2)) =>
+        (id1, id2, similarityRate(s1, s2))
+      }
+      .toSeq
+
+  private val veryHighMatches =
+    combinationsAndSimilarityRate
+      .filter(
+      _._3 >= 0.85
+    ).map{ case (id1, id2, _) =>
+      (id1, id2)
     }
-    .toSeq
-    .sortBy(_._1)
-    .foreach(println)
+  print(veryHighMatches)
+
+
+
+  val allIds = (1 to 12).toSeq
+
+  val initialSetOfSets: Set[Set[Int]] = allIds.map(x => Set(x)).toSet
+
+
+
+  val clusters: Set[Set[Int]] = veryHighMatches.foldLeft(initialSetOfSets)(mergeSubSets)
+
+
+  println("--CLUSTERS : ------------")
+  clusters foreach println
+
+
+
+
+
+
+  def print(matches: Seq[(Int, Int)] = veryHighMatches) {
+    matches foreach println
+  }
+
+
+
+
+
+
+  def mergeSubSets[T](setOfSets: Set[Set[T]], coupleToMerge: (T, T)): Set[Set[T]] = {
+    val (a, b) = coupleToMerge
+    val subsetA = findSubset(setOfSets, a)
+    val subsetB = findSubset(setOfSets, b)
+    if(subsetA == subsetB)
+      setOfSets
+    else
+      setOfSets + (subsetA ++ subsetB) - subsetA - subsetB
+  }
+
+  def findSubset[T](setOfSets: Set[Set[T]], a: T): Set[T] =
+    setOfSets.find(_.contains(a)).getOrElse (
+      throw new RuntimeException(f"the value $a was not contained in any subset of $setOfSets")
+    )
+
+
+
+
+
 
 }
