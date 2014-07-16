@@ -4,9 +4,9 @@ import java.io._
 
 import com.github.mtailor.srtdissector.SrtDissector
 import com.github.mtailor.srtdissector.Vocabulary.Srt
-import com.github.mtailor.srtplayground.utils.{LevenhsteinDistance, SrtCleaner}
+import com.github.mtailor.srtplayground.utils.{ClusteringAlgorithm, LevenhsteinDistance, SrtCleaner}
 
-object AnalyzerProto extends App with SrtCleaner with SrtDissector with LevenhsteinDistance {
+object AnalyzerProto extends App with SrtCleaner with SrtDissector with LevenhsteinDistance with ClusteringAlgorithm[Int] {
 
   val files: Array[File] = new File("/home/manu/dev/writes").listFiles
 
@@ -16,37 +16,25 @@ object AnalyzerProto extends App with SrtCleaner with SrtDissector with Levenhst
       .mkString("\n")
       .take(n)
 
-  val combinationsAndSimilarityRate: Seq[(Int, Int, Float)] =
+
+  val filesIdsAndBeginnings: Map[Int, String] =
     files
-      .map(f =>
-      (f.getName.replaceAll( """^(\d+).*$""", "$1").toInt,
-        takeNChars(dissect(new FileInputStream(f)), 1000)
+      .map (f =>
+        (
+          f.getName.replaceAll( """^(\d+).*$""", "$1").toInt,
+          takeNChars(dissect(new FileInputStream(f)), 1000)
         )
-      )
-      .combinations(2)
-      .map { case Array((id1, s1), (id2, s2)) =>
-        (id1, id2, similarityRate(s1, s2))
-      }
-      .toSeq
+      ).toMap
 
-  private val veryHighMatches =
-    combinationsAndSimilarityRate
-      .filter(
-      _._3 >= 0.85
-    ).map{ case (id1, id2, _) =>
-      (id1, id2)
-    }
-  print(veryHighMatches)
+  val ids = filesIdsAndBeginnings.keySet
 
+  def clustersCriterion(a: Int, b: Int) =
+    similarityRate(
+      filesIdsAndBeginnings(a),
+      filesIdsAndBeginnings(b)
+    ) >= 0.85
 
-
-  val allIds = (1 to 12).toSeq
-
-  val initialSetOfSets: Set[Set[Int]] = allIds.map(x => Set(x)).toSet
-
-
-
-  val clusters: Set[Set[Int]] = veryHighMatches.foldLeft(initialSetOfSets)(mergeSubSets)
+  private val clusters = computeClusters(ids, clustersCriterion)
 
 
   println("--CLUSTERS : ------------")
@@ -55,31 +43,6 @@ object AnalyzerProto extends App with SrtCleaner with SrtDissector with Levenhst
 
 
 
-
-
-  def print(matches: Seq[(Int, Int)] = veryHighMatches) {
-    matches foreach println
-  }
-
-
-
-
-
-
-  def mergeSubSets[T](setOfSets: Set[Set[T]], coupleToMerge: (T, T)): Set[Set[T]] = {
-    val (a, b) = coupleToMerge
-    val subsetA = findSubset(setOfSets, a)
-    val subsetB = findSubset(setOfSets, b)
-    if(subsetA == subsetB)
-      setOfSets
-    else
-      setOfSets + (subsetA ++ subsetB) - subsetA - subsetB
-  }
-
-  def findSubset[T](setOfSets: Set[Set[T]], a: T): Set[T] =
-    setOfSets.find(_.contains(a)).getOrElse (
-      throw new RuntimeException(f"the value $a was not contained in any subset of $setOfSets")
-    )
 
 
 
