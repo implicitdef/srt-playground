@@ -1,8 +1,12 @@
 package com.github.mtailor.srtplayground.utils
 
-import java.io.{File, FileOutputStream}
+import java.io.{FileInputStream, File, FileOutputStream}
 
-trait FilesToolbox {
+import com.github.mtailor.srtdissector.SrtDissector
+
+trait FilesToolbox
+  extends SrtToolbox
+  with SrtDissector {
 
   private var cpt = 0
 
@@ -10,6 +14,17 @@ trait FilesToolbox {
     cpt += 1
     writeToFile(bytes, filePathForId(cpt))
   }
+
+  def filesInFolder(path: String) =
+    new File(path).listFiles
+
+  def readSrt(f: File) =
+    clean(dissect(new FileInputStream(f)))
+
+  def readId(f: File) =
+    f.getName.replaceAll( """^(\d+).*$""", "$1").toInt
+
+
 
   private def writeToFile(bytes: Array[Byte], filePath: String) = {
     println(f"writing into file $filePath")

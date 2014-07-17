@@ -1,6 +1,6 @@
 package com.github.mtailor.srtplayground.utils
 
-trait ClusteringAlgorithm[A] {
+trait ClusteringAlgorithm {
 
   /**
    * Regroups a bunch of values into clusters, given
@@ -8,7 +8,7 @@ trait ClusteringAlgorithm[A] {
    * should be in the same cluster
    *
    */
-  def computeClusters(values: Set[A], clustersCriterion: (A, A) => Boolean): Set[Set[A]] = {
+  def computeClusters[A](values: Set[A], clustersCriterion: (A, A) => Boolean): Set[Set[A]] = {
     val initialClusters: Set[Set[A]] = values map (Set(_))
     val couplesToMerge: Set[(A, A)] =
       values
@@ -25,7 +25,7 @@ trait ClusteringAlgorithm[A] {
    * the two parts of the tuple, if they are not already
    * in the same subset
    */
-  private def mergeSubSets(setOfSets: Set[Set[A]], coupleToMerge: (A, A)): Set[Set[A]] = {
+  private def mergeSubSets[A](setOfSets: Set[Set[A]], coupleToMerge: (A, A)): Set[Set[A]] = {
     val (a, b) = coupleToMerge
     val subsetA = findSubset(setOfSets, a)
     val subsetB = findSubset(setOfSets, b)
@@ -38,7 +38,7 @@ trait ClusteringAlgorithm[A] {
   /**
    * Find the subset that contains a
    */
-  private def findSubset(setOfSets: Set[Set[A]], a: A): Set[A] =
+  private def findSubset[A](setOfSets: Set[Set[A]], a: A): Set[A] =
     setOfSets find (_.contains(a)) getOrElse (
       throw new RuntimeException(f"the value $a was not contained in any subset of $setOfSets")
     )
