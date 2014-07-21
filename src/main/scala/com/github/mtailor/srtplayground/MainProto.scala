@@ -1,11 +1,11 @@
 package com.github.mtailor.srtplayground
 
-import com.github.mtailor.srtplayground.utils.{ClusteringAlgorithm, FilesToolbox, LevenhsteinDistance, SrtToolbox}
+import com.github.mtailor.srtplayground.reorg.BasicClustering.group
+import com.github.mtailor.srtplayground.utils.{FilesToolbox, StringsSimilarityHelper, SrtToolbox}
 
 object MainProto
   extends App
-  with LevenhsteinDistance
-  with ClusteringAlgorithm
+  with StringsSimilarityHelper
   with SrtToolbox
   with FilesToolbox {
 
@@ -18,17 +18,17 @@ object MainProto
         )
       ).toMap
 
-  val clustersCriterion = (a: Int, b: Int) =>
+  val shouldBeInSameGroup = (a: Int, b: Int) =>
     similarityRate(
       filesBeginningsById(a),
       filesBeginningsById(b)
     ) >= 0.85
 
-  val clusters = computeClusters(filesBeginningsById.keySet, clustersCriterion)
+  val groups = group(filesBeginningsById.keySet, shouldBeInSameGroup)
 
 
   println("-- GROUPING OF THE .srt FILES BY SIMILARITY --")
-  clusters foreach println
+  groups foreach println
 
 
 }
