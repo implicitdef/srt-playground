@@ -5,8 +5,7 @@ import java.io.{FileInputStream, File, FileOutputStream}
 import com.github.mtailor.srtdissector.SrtDissector
 
 trait FilesToolbox
-  extends SrtToolbox
-  with SrtDissector {
+  extends SrtToolbox {
 
   private var cpt = 0
 
@@ -19,7 +18,10 @@ trait FilesToolbox
     new File(path).listFiles
 
   def readSrt(f: File) =
-    clean(dissect(new FileInputStream(f)))
+    clean(SrtDissector(new FileInputStream(f)).getOrElse(
+      throw new RuntimeException("Couldn't parse the file " + f)
+    ))
+
 
   def readId(f: File) =
     f.getName.replaceAll( """^(\d+).*$""", "$1").toInt
