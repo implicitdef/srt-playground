@@ -6,12 +6,12 @@ import scala.concurrent.Future
 
 object SubsceneScraperProto extends App with SubsceneParser with SubsceneCaller with FilesToolbox {
 
-  val mediaUrl = "/subtitles/game-of-thrones-first-season"
+  val mediaUrl = "/subtitles/mad-men-sixth-season"
 
   val subtitlesUrlsFuture: Future[Iterable[String]] =
     callForString(mediaUrl) map { body =>
       extractLinksOfMediaPage(body) filter { a =>
-        isForSeasonAndEpisode(extractTextOfLink(a), 1, 1)
+        isForSeasonAndEpisode(extractTextOfLink(a), 6, 8)
       } map { a =>
         extractUrlOfLink(a)
       }
@@ -27,17 +27,17 @@ object SubsceneScraperProto extends App with SubsceneParser with SubsceneCaller 
     )
   }
 
-  val allDoneFuture: Future[Unit] = downloadUrlsFuture map {
+
+
+  val allDoneFuture: Future[Unit] = downloadUrlsFuture flatMap {
     case urls => {
       Future.sequence(
         urls map { url =>
-          callForBytes(url) map { bytes =>
-            writeToNewFile(bytes)
-          }
+          callForBytes(url) map writeToNewFile
         }
       )
     }
-  }
+  } map (_ => ())
 
   allDoneFuture foreach { _ =>
     println("all done, stopping the app")

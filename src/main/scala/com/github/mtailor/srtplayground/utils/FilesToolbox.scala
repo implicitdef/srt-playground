@@ -11,7 +11,9 @@ trait FilesToolbox
 
   def writeToNewFile(bytes: Array[Byte]): Unit = {
     cpt += 1
-    writeToFile(bytes, filePathForId(cpt))
+    val path = filePathForId(cpt)
+    println(f"writing to $path")
+    writeToFile(bytes, path)
   }
 
   def filesInFolder(path: String) =
