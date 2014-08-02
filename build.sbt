@@ -8,6 +8,8 @@ scalaVersion := "2.11.1"
 
 libraryDependencies += "commons-io" % "commons-io" % "2.4"
 
+libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.3.2"
+
 libraryDependencies += "com.github.mtailor" %% "srt-dissector" % "0.1.1"
 
 libraryDependencies += "org.specs2" %% "specs2" % "2.3.12" % Test
