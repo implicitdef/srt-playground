@@ -66,13 +66,14 @@ class SubsceneScrapingService(val filesHelper: FilesHelper) extends AkkaAware wi
             .map { case (url, i) =>
               callForBytes(url)
                 .map { bytes =>
-                  val zipPath = f"$dir/zips/$i.zip"
-                  val unzippedPath = f"$dir/unzips/$i"
-                filesHelper.writeToNewFile(bytes, zipPath)
-                  new ZipFile(zipPath).extractAll(unzippedPath)
-                  if (filesHelper.containsOneFile(unzippedPath)) {
-                    filesHelper.moveFile(filesHelper.filesInFolder(unzippedPath).head.getAbsolutePath, f"$dir/$i.srt")
-                  }
+                  val zipPath = f"$dir/zips/${i+1}.zip"
+                  val unzippedPath = f"$dir/unzips/${i+1}"
+                  filesHelper.writeToNewFile(bytes, zipPath)
+                    new ZipFile(zipPath).extractAll(unzippedPath)
+                    if (filesHelper.containsOneFile(unzippedPath))
+                      filesHelper.moveFile(filesHelper.filesInFolder(unzippedPath).head.getAbsolutePath, f"$dir/${i+1}.srt")
+                    else
+                      logger.info(s"There was less or more than 1 file in $unzippedPath")
                 }
             }
         )
@@ -139,7 +140,7 @@ class SubsceneScrapingService(val filesHelper: FilesHelper) extends AkkaAware wi
   private def isForSeasonAndEpisode(name: String, season: Int, episode: Int) =
     name
       .toLowerCase
-      .contains(f"s$season%02de$episode%02d")
+      .matches(f".*s$season%02de$episode%02d[^\\d].+")
 
 
 

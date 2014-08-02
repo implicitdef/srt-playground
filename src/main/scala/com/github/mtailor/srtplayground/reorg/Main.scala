@@ -14,7 +14,15 @@ object Main extends App {
       new SrtHelper,
       filesHelper
     )
-    mainService.fetchSrtFiles(args(0), args(1).toInt, args(2).toInt, args(3))
+
+    val url = args(0)
+    val season = args(1).toInt
+    val nbEpisodes = args(2).toInt
+    val dir = args(3)
+
+    1 to nbEpisodes foreach { ep =>
+      mainService.fetchSrtFiles(url, season, ep, args(3) + "/" + ep)
+    }
   } catch {
     case t: Throwable => t.printStackTrace()
   }

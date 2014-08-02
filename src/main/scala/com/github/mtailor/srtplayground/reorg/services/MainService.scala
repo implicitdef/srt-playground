@@ -32,6 +32,7 @@ class MainService(val subsceneScrapingService: SubsceneScrapingService,
     dir: String
   ): Future[Unit] = {
     val allSrtDir = f"$dir/all"
+    filesHelper.makeDir(dir)
     filesHelper.makeDir(allSrtDir)
     subsceneScrapingService
       .getAndWriteSrtFiles(url, season, episode, allSrtDir)
@@ -48,7 +49,7 @@ class MainService(val subsceneScrapingService: SubsceneScrapingService,
           .map (_.head)
           .zipWithIndex
           .foreach { case (path, i) =>
-            filesHelper.moveFile(path, f"$dir/$i.srt")
+            filesHelper.moveFile(path, f"$dir/${i+1}.srt")
           }
 
         groups.foreach(g => logger.info (f"==> $g"))
