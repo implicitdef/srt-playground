@@ -4,14 +4,19 @@ import java.io.{File, FileInputStream}
 
 import com.github.mtailor.srtdissector.SrtDissector
 import com.github.mtailor.srtdissector.Vocabulary._
+import com.typesafe.scalalogging.LazyLogging
 
 
-class SrtHelper  {
+class SrtHelper extends LazyLogging {
 
-  def readSrt(f: File): Srt =
-    clean(SrtDissector(new FileInputStream(f)).getOrElse(
+  def readSrt(f: File): Srt = {
+    logger.info(s"Parsing ${f.getAbsolutePath}")
+    val srt = clean(SrtDissector(new FileInputStream(f)).getOrElse(
       throw new RuntimeException("Couldn't parse the file " + f)
     ))
+    logger.info("Parsing done")
+    srt
+  }
 
   def firstChars(srt: Srt, nbChars: Int): String =
     srt.flatMap(_.lines).mkString("\n").take(nbChars)

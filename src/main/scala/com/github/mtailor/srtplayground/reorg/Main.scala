@@ -1,10 +1,12 @@
 package com.github.mtailor.srtplayground.reorg
 
-import com.github.mtailor.srtplayground.reorg.helpers.{FilesHelper, SrtHelper, StringsComparisonHelper, BasicClusteringHelper}
+import com.github.mtailor.srtplayground.reorg.akka.AkkaAware
+import com.github.mtailor.srtplayground.reorg.helpers._
 import com.github.mtailor.srtplayground.reorg.services.{SubsceneScrapingService, MainService}
+import com.typesafe.scalalogging.LazyLogging
 
 
-object Main extends App {
+object Main extends App with AkkaAware with LazyLogging {
   try {
     val filesHelper = new FilesHelper
     val mainService = new MainService(
@@ -16,14 +18,14 @@ object Main extends App {
     )
 
     val url = args(0)
-    val season = args(1).toInt
-    val nbEpisodes = args(2).toInt
-    val dir = args(3)
+    val dir = args(1)
+    mainService.fetchSrtFiles(
+      url,
+      _ => true,
+      dir
+    ) onFailure { case t: Throwable => logger.error("Failure", t)}
 
-    1 to nbEpisodes foreach { ep =>
-      mainService.fetchSrtFiles(url, season, ep, args(3) + "/" + ep)
-    }
   } catch {
-    case t: Throwable => t.printStackTrace()
+    case t: Throwable => case t: Throwable => logger.error("Failure", t)
   }
 }

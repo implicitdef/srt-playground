@@ -16,8 +16,7 @@ class MainService(val subsceneScrapingService: SubsceneScrapingService,
   /**
    * Given :
    * - an url to a tv show on subscene
-   * - a season number
-   * - an episode number
+   * - a filter telling us for each subtitle file name if it should be kept
    * - a empty directory to work in
    *
    * this will download and unzip all corresponding srt files from
@@ -27,15 +26,14 @@ class MainService(val subsceneScrapingService: SubsceneScrapingService,
    */
   def fetchSrtFiles(
     url: String,
-    season: Int,
-    episode: Int,
+    subtitleNamesFilter: (String => Boolean),
     dir: String
   ): Future[Unit] = {
     val allSrtDir = f"$dir/all"
     filesHelper.makeDir(dir)
     filesHelper.makeDir(allSrtDir)
     subsceneScrapingService
-      .getAndWriteSrtFiles(url, season, episode, allSrtDir)
+      .getAndWriteSrtFiles(url, subtitleNamesFilter, allSrtDir)
       .map { _ =>
 
         val beginnings = filesBeginningsByFilePath(allSrtDir)

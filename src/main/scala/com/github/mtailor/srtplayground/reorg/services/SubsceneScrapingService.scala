@@ -1,5 +1,8 @@
 package com.github.mtailor.srtplayground.reorg.services
 
+import java.util.concurrent.TimeUnit._
+
+import akka.util.Timeout
 import com.github.mtailor.srtplayground.reorg.akka.AkkaAware
 import com.github.mtailor.srtplayground.reorg.helpers.FilesHelper
 import com.typesafe.scalalogging.LazyLogging
@@ -18,11 +21,12 @@ import scala.concurrent.Future
 
 class SubsceneScrapingService(val filesHelper: FilesHelper) extends AkkaAware with LazyLogging {
 
+  implicit val timeout = Timeout(3, SECONDS)
+
   /**
    * Given :
-   * - an url to a tv show on subscene
-   * - a season number
-   * - an episode number
+   * - an url to a media on subscene
+   * - a filter telling us for each subtitle file name if it should be kept
    * - an empty temporary directory to work in
    *
    * this will download  and unzip all corresponding srt files
@@ -32,15 +36,14 @@ class SubsceneScrapingService(val filesHelper: FilesHelper) extends AkkaAware wi
    */
   def getAndWriteSrtFiles(
     url: String,
-    season: Int,
-    episode: Int,
+    subtitleNamesFilter: (String => Boolean),
     dir: String
   ): Future[Unit] = {
 
     val subtitlesUrlsFuture: Future[Iterable[String]] =
       callForString(url) map { body =>
         extractLinksOfMediaPage(body) filter { a =>
-          isForSeasonAndEpisode(extractTextOfLink(a), season, episode)
+          subtitleNamesFilter(extractTextOfLink(a))
         } map { a =>
           extractUrlOfLink(a)
         }
@@ -136,12 +139,5 @@ class SubsceneScrapingService(val filesHelper: FilesHelper) extends AkkaAware wi
       .select("span:last-child")
       .text()
       .trim()
-
-  private def isForSeasonAndEpisode(name: String, season: Int, episode: Int) =
-    name
-      .toLowerCase
-      .matches(f".*s$season%02de$episode%02d[^\\d].+")
-
-
 
 }
