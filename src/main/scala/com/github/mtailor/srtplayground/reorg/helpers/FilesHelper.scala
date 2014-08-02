@@ -6,7 +6,7 @@ import java.nio.file.Files
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.FileUtils
 
-class FilesToolbox extends LazyLogging {
+class FilesHelper extends LazyLogging {
 
   def writeToNewFile(bytes: Array[Byte], path: String): Unit = {
     logger.info(f"writing $path")

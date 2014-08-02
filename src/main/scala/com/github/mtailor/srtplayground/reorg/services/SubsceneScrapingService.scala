@@ -1,7 +1,7 @@
 package com.github.mtailor.srtplayground.reorg.services
 
 import com.github.mtailor.srtplayground.reorg.akka.AkkaAware
-import com.github.mtailor.srtplayground.reorg.helpers.FilesToolbox
+import com.github.mtailor.srtplayground.reorg.helpers.FilesHelper
 import com.typesafe.scalalogging.LazyLogging
 import net.lingala.zip4j.core.ZipFile
 import org.jsoup.Jsoup
@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 
 
-class SubsceneScrapingService(val filesToolbox: FilesToolbox) extends AkkaAware with LazyLogging {
+class SubsceneScrapingService(val filesHelper: FilesHelper) extends AkkaAware with LazyLogging {
 
   /**
    * Given :
@@ -58,8 +58,8 @@ class SubsceneScrapingService(val filesToolbox: FilesToolbox) extends AkkaAware 
 
     val allDoneFuture: Future[Unit] = downloadUrlsFuture flatMap {
       case urls => {
-        filesToolbox.makeDir(f"$dir/zips")
-        filesToolbox.makeDir(f"$dir/unzips")
+        filesHelper.makeDir(f"$dir/zips")
+        filesHelper.makeDir(f"$dir/unzips")
         Future.sequence(
           urls
             .zipWithIndex
@@ -68,18 +68,18 @@ class SubsceneScrapingService(val filesToolbox: FilesToolbox) extends AkkaAware 
                 .map { bytes =>
                   val zipPath = f"$dir/zips/$i.zip"
                   val unzippedPath = f"$dir/unzips/$i"
-                filesToolbox.writeToNewFile(bytes, zipPath)
+                filesHelper.writeToNewFile(bytes, zipPath)
                   new ZipFile(zipPath).extractAll(unzippedPath)
-                  if (filesToolbox.containsOneFile(unzippedPath)) {
-                    filesToolbox.moveFile(filesToolbox.filesInFolder(unzippedPath).head.getAbsolutePath, f"$dir/$i.srt")
+                  if (filesHelper.containsOneFile(unzippedPath)) {
+                    filesHelper.moveFile(filesHelper.filesInFolder(unzippedPath).head.getAbsolutePath, f"$dir/$i.srt")
                   }
                 }
             }
         )
       }
     } map { _ =>
-      filesToolbox.deleteDir(f"$dir/zips")
-      filesToolbox.deleteDir(f"$dir/unzips")
+      filesHelper.deleteDir(f"$dir/zips")
+      filesHelper.deleteDir(f"$dir/unzips")
     }
 
     allDoneFuture

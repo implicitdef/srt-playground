@@ -1,7 +1,7 @@
 package com.github.mtailor.srtplayground.reorg.services
 
 import com.github.mtailor.srtplayground.reorg.akka.AkkaAware
-import com.github.mtailor.srtplayground.reorg.helpers.{SrtToolbox, StringsComparisonHelper, FilesToolbox, BasicClusteringHelper}
+import com.github.mtailor.srtplayground.reorg.helpers.{SrtHelper, StringsComparisonHelper, FilesHelper, BasicClusteringHelper}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.Future
@@ -9,8 +9,8 @@ import scala.concurrent.Future
 class MainService(val subsceneScrapingService: SubsceneScrapingService,
                   val basicClusteringHelper: BasicClusteringHelper,
                   val stringsComparisonHelper: StringsComparisonHelper,
-                  val srtToolbox : SrtToolbox,
-                  val filesToolbox : FilesToolbox
+                  val srtHelper : SrtHelper,
+                  val filesHelper : FilesHelper
                   ) extends AkkaAware with LazyLogging {
 
   /**
@@ -32,7 +32,7 @@ class MainService(val subsceneScrapingService: SubsceneScrapingService,
     dir: String
   ): Future[Unit] = {
     val allSrtDir = f"$dir/all"
-    filesToolbox.makeDir(allSrtDir)
+    filesHelper.makeDir(allSrtDir)
     subsceneScrapingService
       .getAndWriteSrtFiles(url, season, episode, allSrtDir)
       .map { _ =>
@@ -48,22 +48,22 @@ class MainService(val subsceneScrapingService: SubsceneScrapingService,
           .map (_.head)
           .zipWithIndex
           .foreach { case (path, i) =>
-            filesToolbox.moveFile(path, f"$dir/$i.srt")
+            filesHelper.moveFile(path, f"$dir/$i.srt")
           }
 
         groups.foreach(g => logger.info (f"==> $g"))
 
-      filesToolbox.deleteDir(allSrtDir)
+      filesHelper.deleteDir(allSrtDir)
         shutdownAkka
       }
   }
 
   private def filesBeginningsByFilePath(allSrtDir: String): Map[String, String] =
-    filesToolbox.filesInFolder(allSrtDir)
+    filesHelper.filesInFolder(allSrtDir)
       .map { f =>
       (
         f.getAbsolutePath,
-        srtToolbox.firstChars(srtToolbox.readSrt(f), 1000)
+        srtHelper.firstChars(srtHelper.readSrt(f), 1000)
       )
     }
     .toMap

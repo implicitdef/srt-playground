@@ -6,7 +6,7 @@ import com.github.mtailor.srtdissector.SrtDissector
 import com.github.mtailor.srtdissector.Vocabulary._
 
 
-class SrtToolbox  {
+class SrtHelper  {
 
   def readSrt(f: File): Srt =
     clean(SrtDissector(new FileInputStream(f)).getOrElse(
