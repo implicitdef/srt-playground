@@ -5,27 +5,18 @@ import java.io.{File, FileInputStream}
 import com.github.mtailor.srtdissector.SrtDissector
 import com.github.mtailor.srtdissector.Vocabulary._
 
-trait SrtToolbox {
 
-  def readSrt(f: File): Srt
+class SrtToolbox  {
 
-  def firstChars(srt: Srt, nbChars: Int): String
-
-}
-
-object SrtToolbox extends SrtToolbox {
-
-  override def readSrt(f: File): Srt =
-    SrtToolbox.clean(SrtDissector(new FileInputStream(f)).getOrElse(
+  def readSrt(f: File): Srt =
+    clean(SrtDissector(new FileInputStream(f)).getOrElse(
       throw new RuntimeException("Couldn't parse the file " + f)
     ))
 
-  override def firstChars(srt: Srt, nbChars: Int): String =
+  def firstChars(srt: Srt, nbChars: Int): String =
     srt.flatMap(_.lines).mkString("\n").take(nbChars)
 
-  /**
-   * Removes the frequent 'ads' at the start and end of subtitles
-   */
+  //Removes the frequent 'ads' at the start and end of subtitles
   private def clean(srt: Srt): Srt =
     srt
       .zipWithIndex

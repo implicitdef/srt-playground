@@ -1,7 +1,7 @@
 package com.github.mtailor.srtplayground.reorg.helpers
 
 
-trait BasicClustering {
+class BasicClusteringHelper {
 
   /**
    * Regroups a bunch of values into subgroups, given
@@ -17,18 +17,7 @@ trait BasicClustering {
   def group[A](
     values: Set[A],
     shouldBeRegrouped: (A, A) => Boolean
-  ): Set[Set[A]]
-
-}
-
-object BasicClustering extends BasicClustering {
-
-  //TODO test
-
-  def group[A](
-                values: Set[A],
-                shouldBeRegrouped: (A, A) => Boolean
-                ): Set[Set[A]] = {
+  ): Set[Set[A]] = {
 
     val initialClusters: Set[Set[A]] = values map (Set(_))
     val couplesToMerge: Set[(A, A)] =
@@ -39,6 +28,7 @@ object BasicClustering extends BasicClustering {
         .filter { case (a, b) => shouldBeRegrouped(a, b)}
         .toSet
     couplesToMerge.foldLeft(initialClusters)(mergeSubSets)
+
   }
 
   // Merge the two subsets that contains
@@ -58,7 +48,7 @@ object BasicClustering extends BasicClustering {
   private def findSubset[A](setOfSets: Set[Set[A]], a: A): Set[A] =
     setOfSets find (_.contains(a)) getOrElse (
       throw new RuntimeException(f"the value $a was not contained in any subset of $setOfSets")
-      )
+    )
 
 
 }

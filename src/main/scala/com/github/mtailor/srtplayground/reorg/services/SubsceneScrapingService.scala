@@ -2,6 +2,7 @@ package com.github.mtailor.srtplayground.reorg.services
 
 import com.github.mtailor.srtplayground.reorg.akka.AkkaAware
 import com.github.mtailor.srtplayground.reorg.helpers.FilesToolbox
+import com.typesafe.scalalogging.LazyLogging
 import net.lingala.zip4j.core.ZipFile
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -12,7 +13,10 @@ import spray.http.{HttpCookie, HttpRequest, HttpResponse}
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
-trait SubsceneScrapingService {
+
+
+
+class SubsceneScrapingService(val filesToolbox: FilesToolbox) extends AkkaAware with LazyLogging {
 
   /**
    * Given :
@@ -27,17 +31,6 @@ trait SubsceneScrapingService {
    *
    */
   def getAndWriteSrtFiles(
-    url: String,
-    season: Int,
-    episode: Int,
-    dir: String
-  ): Future[Unit]
-
-}
-
-object SubsceneScrapingService extends SubsceneScrapingService with AkkaAware {
-
-  override def getAndWriteSrtFiles(
     url: String,
     season: Int,
     episode: Int,
@@ -65,8 +58,8 @@ object SubsceneScrapingService extends SubsceneScrapingService with AkkaAware {
 
     val allDoneFuture: Future[Unit] = downloadUrlsFuture flatMap {
       case urls => {
-        FilesToolbox.makeDir(f"$dir/zips")
-        FilesToolbox.makeDir(f"$dir/unzips")
+        filesToolbox.makeDir(f"$dir/zips")
+        filesToolbox.makeDir(f"$dir/unzips")
         Future.sequence(
           urls
             .zipWithIndex
@@ -75,18 +68,18 @@ object SubsceneScrapingService extends SubsceneScrapingService with AkkaAware {
                 .map { bytes =>
                   val zipPath = f"$dir/zips/$i.zip"
                   val unzippedPath = f"$dir/unzips/$i"
-                  FilesToolbox.writeToNewFile(bytes, zipPath)
+                filesToolbox.writeToNewFile(bytes, zipPath)
                   new ZipFile(zipPath).extractAll(unzippedPath)
-                  if (FilesToolbox.containsOneFile(unzippedPath)) {
-                    FilesToolbox.moveFile(FilesToolbox.filesInFolder(unzippedPath).head.getAbsolutePath, f"$dir/$i.srt")
+                  if (filesToolbox.containsOneFile(unzippedPath)) {
+                    filesToolbox.moveFile(filesToolbox.filesInFolder(unzippedPath).head.getAbsolutePath, f"$dir/$i.srt")
                   }
                 }
             }
         )
       }
     } map { _ =>
-      FilesToolbox.deleteDir(f"$dir/zips")
-      FilesToolbox.deleteDir(f"$dir/unzips")
+      filesToolbox.deleteDir(f"$dir/zips")
+      filesToolbox.deleteDir(f"$dir/unzips")
     }
 
     allDoneFuture
@@ -105,9 +98,9 @@ object SubsceneScrapingService extends SubsceneScrapingService with AkkaAware {
 
   private def call(relativeUrl: String): Future[HttpResponse] = {
     val url = domain + relativeUrl
-    println(f"Requesting $url")
+    logger.info(f"Requesting $url")
     pipeline(Get(url)) andThen {
-      case _ => println(f"OK $url")
+      case _ => logger.info(f"OK $url")
     }
   }
 

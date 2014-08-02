@@ -3,27 +3,13 @@ package com.github.mtailor.srtplayground.reorg.helpers
 import java.io.{File, FileOutputStream}
 import java.nio.file.Files
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.FileUtils
 
-trait FilesToolbox {
+class FilesToolbox extends LazyLogging {
 
-  def writeToNewFile(bytes: Array[Byte], path: String): Unit
-
-  def filesInFolder(path: String): Iterable[File]
-
-  def makeDir(path: String): Unit
-
-  def deleteDir(path: String): Unit
-
-  def moveFile(src: String, dest: String): Unit
-
-  def containsOneFile(path: String): Boolean
-}
-
-object FilesToolbox extends FilesToolbox {
-
-  override def writeToNewFile(bytes: Array[Byte], path: String): Unit = {
-    println(f"writing $path")
+  def writeToNewFile(bytes: Array[Byte], path: String): Unit = {
+    logger.info(f"writing $path")
     val fos = new FileOutputStream(path)
     try
       fos.write(bytes)
@@ -31,25 +17,26 @@ object FilesToolbox extends FilesToolbox {
       fos.close
   }
 
-  override def filesInFolder(path: String): Iterable[File] =
+  def filesInFolder(path: String): Iterable[File] =
     path.listFiles
 
-  override def makeDir(path: String): Unit = {
-    println(f"mkdir $path")
+  def makeDir(path: String): Unit = {
+    logger.info(f"mkdir $path")
     path.mkdir()
   }
 
 
-  override def deleteDir(path: String): Unit = {
-    println(f"removing $path")
+  def deleteDir(path: String): Unit = {
+    logger.info(f"removing $path")
     FileUtils.deleteDirectory(path)
   }
 
-  override def moveFile(src: String, dest: String): Unit = {
-    println(f"moving $src to $dest")
+  def moveFile(src: String, dest: String): Unit = {
+    logger.info(f"moving $src to $dest")
     Files.move(src.toPath, dest.toPath)
   }
-  override def containsOneFile(path: String): Boolean =
+
+  def containsOneFile(path: String): Boolean =
     filesInFolder(path).size == 1
 
   private implicit def string2File(s: String): File =

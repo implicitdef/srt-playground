@@ -1,11 +1,17 @@
 package com.github.mtailor.srtplayground.reorg.services
 
 import com.github.mtailor.srtplayground.reorg.akka.AkkaAware
-import com.github.mtailor.srtplayground.reorg.helpers.{BasicClustering, FilesToolbox, SrtToolbox, StringsApproximateComparison}
+import com.github.mtailor.srtplayground.reorg.helpers.{SrtToolbox, StringsComparisonHelper, FilesToolbox, BasicClusteringHelper}
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.Future
 
-trait MainService {
+class MainService(val subsceneScrapingService: SubsceneScrapingService,
+                  val basicClusteringHelper: BasicClusteringHelper,
+                  val stringsComparisonHelper: StringsComparisonHelper,
+                  val srtToolbox : SrtToolbox,
+                  val filesToolbox : FilesToolbox
+                  ) extends AkkaAware with LazyLogging {
 
   /**
    * Given :
@@ -24,51 +30,40 @@ trait MainService {
     season: Int,
     episode: Int,
     dir: String
-  ): Future[Unit]
-
-}
-
-object MainService extends MainService with AkkaAware {
-
-  override def fetchSrtFiles(
-    url: String,
-    season: Int,
-    episode: Int,
-    dir: String
   ): Future[Unit] = {
     val allSrtDir = f"$dir/all"
-    FilesToolbox.makeDir(allSrtDir)
-    SubsceneScrapingService
+    filesToolbox.makeDir(allSrtDir)
+    subsceneScrapingService
       .getAndWriteSrtFiles(url, season, episode, allSrtDir)
       .map { _ =>
 
         val beginnings = filesBeginningsByFilePath(allSrtDir)
 
-        val groups = BasicClustering.group(
+        val groups = basicClusteringHelper.group(
           beginnings.keySet,
-          (a: String, b: String) => StringsApproximateComparison(beginnings(a), beginnings(b)) >= 0.85
+          (a: String, b: String) => stringsComparisonHelper.similarityRate(beginnings(a), beginnings(b)) >= 0.85
         )
 
         groups
           .map (_.head)
           .zipWithIndex
           .foreach { case (path, i) =>
-            FilesToolbox.moveFile(path, f"$dir/$i.srt")
+            filesToolbox.moveFile(path, f"$dir/$i.srt")
           }
 
-        groups.foreach(g => println (f"==> $g"))
+        groups.foreach(g => logger.info (f"==> $g"))
 
-        FilesToolbox.deleteDir(allSrtDir)
-        shutdown
+      filesToolbox.deleteDir(allSrtDir)
+        shutdownAkka
       }
   }
 
   private def filesBeginningsByFilePath(allSrtDir: String): Map[String, String] =
-    FilesToolbox.filesInFolder(allSrtDir)
+    filesToolbox.filesInFolder(allSrtDir)
       .map { f =>
       (
         f.getAbsolutePath,
-        SrtToolbox.firstChars(SrtToolbox.readSrt(f), 1000)
+        srtToolbox.firstChars(srtToolbox.readSrt(f), 1000)
       )
     }
     .toMap
