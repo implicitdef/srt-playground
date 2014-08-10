@@ -1,4 +1,4 @@
-package com.github.mtailor.srtplayground.reorg.helpers
+package com.github.mtailor.srtplayground.helpers
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -20,7 +20,6 @@ class BasicClusteringHelper extends LazyLogging {
     values: Set[A],
     shouldBeRegrouped: (A, A) => Boolean
   ): Set[Set[A]] = {
-    logger.info("Starting to group")
     val initialClusters: Set[Set[A]] = values map (Set(_))
     val couplesToMerge: Set[(A, A)] =
       values

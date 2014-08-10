@@ -1,6 +1,6 @@
-package com.github.mtailor.srtplayground.reorg.helpers
+package com.github.mtailor.srtplayground.helpers
 
-import java.io.{File, FileInputStream}
+import java.io.{FileInputStream, File}
 
 import com.github.mtailor.srtdissector.SrtDissector
 import com.github.mtailor.srtdissector.Vocabulary._
@@ -10,11 +10,9 @@ import com.typesafe.scalalogging.LazyLogging
 class SrtHelper extends LazyLogging {
 
   def readSrt(f: File): Srt = {
-    logger.info(s"Parsing ${f.getAbsolutePath}")
     val srt = clean(SrtDissector(new FileInputStream(f)).getOrElse(
       throw new RuntimeException("Couldn't parse the file " + f)
     ))
-    logger.info("Parsing done")
     srt
   }
 
