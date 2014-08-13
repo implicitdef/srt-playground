@@ -1,13 +1,13 @@
 package com.github.mtailor.srtplayground.actors
 
-import akka.actor.{ActorLogging, Actor}
 import java.nio.file.Path
 
+import akka.actor.{Actor, ActorLogging}
 import com.github.mtailor.srtdissector.Vocabulary.Srt
-import com.github.mtailor.srtplayground.helpers._
 import com.github.mtailor.srtplayground.helpers.PathConversions._
+import com.github.mtailor.srtplayground.helpers._
 
-import scala.util.Random
+import scala.util.control.NonFatal
 
 object SubtitlesAnalysisSignal
 
@@ -24,7 +24,12 @@ class NewSubtitlesManagerActor(
   override def receive = {
     case newSubtitleTempFilePath: Path => {
       log.info(s"received a new file : $newSubtitleTempFilePath")
-      srts put (newSubtitleTempFilePath, srtHelper.readSrt(newSubtitleTempFilePath))
+      //TODO better manage the parsing problems : the actor gets killed and the srts variable is empty again...
+      try {
+        srts put(newSubtitleTempFilePath, srtHelper.readSrt(newSubtitleTempFilePath))
+      } catch {
+        case NonFatal(t) => log.error(t, "parsing problem")
+      }
     }
     case SubtitlesAnalysisSignal => {
       val beginnings = srts mapValues (srtHelper.firstChars(_, 100))
@@ -32,11 +37,7 @@ class NewSubtitlesManagerActor(
       var cpt = 0
 
       val shouldBeRegrouped: ((Any, String), (Any, String)) => Boolean =
-        (a, b) => {
-          val similarityRate = stringsComparisonHelper.similarityRate(a._2, b._2)
-          log.info(s"Similiarity : ${similarityRate} between ${}")
-          similarityRate >= similarityThreshold
-        }
+        (a, b) => stringsComparisonHelper.similarityRate(a._2, b._2) >= similarityThreshold
 
 
 

@@ -10,6 +10,8 @@ import com.github.mtailor.srtplayground.helpers.StandardTimeout
 import org.jsoup.Jsoup
 import spray.http.HttpResponse
 
+import scala.concurrent.Future
+
 // handle the page on subscene dedicated to a subtitle
 // hits it and download the subtitle, before sending it to the newSubtitlesManagerActor
 class SubtitlePagesActor extends Actor with StandardTimeout {
@@ -31,11 +33,18 @@ class SubtitlePagesActor extends Actor with StandardTimeout {
               write(zipPath, response.entity.data.toByteArray)
               // ask to the unzipper
               val unzipper = actorSelection(ActorPaths.unzipperActor)
+              val filesDeleter = actorSelection(ActorPaths.filesDeletionActor)
               val newSubtitlesManager = actorSelection(ActorPaths.newSubtitlesManagerActor)
-              // send to the newSubtitlesManager
-              (unzipper ? zipPath)
-                .mapTo[Path]
-                .pipeToSelection(newSubtitlesManager)
+              val unzippedPathOptionFuture = (unzipper ? zipPath).mapTo[Option[Path]]
+              //the zip will need to be removed
+              unzippedPathOptionFuture onComplete {
+                case _ => filesDeleter ! zipPath
+              }
+              // send to the newSubtitlesManager, if the unzip is a success
+              for {
+                option <- unzippedPathOptionFuture
+                unzippedPath <- option
+              } newSubtitlesManager ! unzippedPath
             }
         }
     }
