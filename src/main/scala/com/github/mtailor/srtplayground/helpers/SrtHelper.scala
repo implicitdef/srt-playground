@@ -35,7 +35,7 @@ class SrtHelper extends LazyLogging {
       index >= seq.length - headAndTailSizes
 
   private def isLikelyGarbage(b: SubtitleBlock): Boolean =
-    b.lines.exists(isLikelyGarbage(_))
+    b.lines.exists(isLikelyGarbage)
 
   private def isLikelyGarbage(s: String) = {
     val s2 = s.toLowerCase

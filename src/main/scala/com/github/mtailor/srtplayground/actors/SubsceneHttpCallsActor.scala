@@ -19,19 +19,16 @@ class SubsceneHttpCallsActor extends Actor with ActorLogging with StandardTimeou
       .andThen(sendReceive)
 
   override def receive = {
-    case relativeUrl: String => {
+    case relativeUrl: String =>
       val originalSender = sender
       val url = s"http://subscene.com$relativeUrl"
       log.info(s">>> $url")
       call(Get(url)) onComplete {
-        case Success(response) => {
+        case Success(response) =>
           originalSender ! response
-        }
         case Failure(t) => throw t
       }
-    }
   }
-
 
 
 }

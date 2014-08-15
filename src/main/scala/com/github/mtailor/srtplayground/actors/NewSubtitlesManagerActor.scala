@@ -15,14 +15,13 @@ class NewSubtitlesManagerActor(
   val basicClusteringHelper: BasicClusteringHelper,
   val srtHelper: SrtHelper,
   val stringsComparisonHelper: StringsComparisonHelper
-
 ) extends Actor with ActorLogging {
 
   val srts: scala.collection.mutable.Map[Path, Srt] = scala.collection.mutable.Map.empty
   val similarityThreshold = 0.85
 
   override def receive = {
-    case newSubtitleTempFilePath: Path => {
+    case newSubtitleTempFilePath: Path =>
       log.info(s"received a new file : $newSubtitleTempFilePath")
       //TODO better manage the parsing problems : the actor gets killed and the srts variable is empty again...
       try {
@@ -30,8 +29,7 @@ class NewSubtitlesManagerActor(
       } catch {
         case NonFatal(t) => log.error(t, "parsing problem")
       }
-    }
-    case SubtitlesAnalysisSignal => {
+    case SubtitlesAnalysisSignal =>
       val beginnings = srts mapValues (srtHelper.firstChars(_, 100))
 
       var cpt = 0
@@ -51,10 +49,6 @@ class NewSubtitlesManagerActor(
       groups foreach { g =>
         log.info(s" - (${g.size}) ${g.map(_._1)}")
       }
-
-
-
-    }
 
 
   }
