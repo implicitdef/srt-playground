@@ -15,7 +15,7 @@ object SrtFullComparisonHelper {
   )
 
   case class TimingShift(delay: Int, factor: Double)
-
+  object ZeroShift extends TimingShift(0, 1)
 
   sealed trait SrtsFullComparisonResult
   //the texts are different, they must come from two different transcriptions
@@ -25,10 +25,8 @@ object SrtFullComparisonHelper {
   sealed trait SameText extends SrtsFullComparisonResult
   //the texts are near identical but the timings have nothing in common (should not be common)
   object SameTextUnrelatedTimings extends SameText
-  //the texts are near identical and the timings are similar with a shift
+  //the texts are near identical and the timings are similar with a shift (which may be the zero shift)
   case class SameTextShiftedTimings(shift: TimingShift) extends SameText
-  //the texts are near identical and the timings as well
-  object SameTextSameTimings extends SameText
 
 }
 class SrtFullComparisonHelper(val textualComparisonHelper: SrtsTextualMatchingHelper) {
@@ -41,7 +39,7 @@ class SrtFullComparisonHelper(val textualComparisonHelper: SrtsTextualMatchingHe
   def compare(base: Srt, other: Srt)(implicit params: FullComparisonParameters): SrtsFullComparisonResult = {
     val matchingBlocks = textualComparisonHelper.computeMatches(base, other)(params.textualMatchingParams)
     val idealNbOfMatchingBlocks = min(max(base.size, other.size), params.textualMatchingParams.blocksToConsiderFromBeginning)
-    if (matchingBlocks.size < 2 || matchingBlocks.size/idealNbOfMatchingBlocks < params.minimumMatchingBlocksRate)
+    if (matchingBlocks.size < 2 || matchingBlocks.size.toDouble/idealNbOfMatchingBlocks < params.minimumMatchingBlocksRate)
       Unrelated
     else {
       //use the first block and the last to determine the shift
@@ -53,10 +51,7 @@ class SrtFullComparisonHelper(val textualComparisonHelper: SrtsTextualMatchingHe
       )
       //check it on all blocks
       if(verifyShift(matchingBlocks, shift, params.timingsShiftApproximation))
-        shift match {
-          case TimingShift(0, 0) => SameTextSameTimings
-          case _ => SameTextShiftedTimings(shift)
-        }
+        SameTextShiftedTimings(shift)
       else
         SameTextUnrelatedTimings
     }
@@ -76,7 +71,7 @@ class SrtFullComparisonHelper(val textualComparisonHelper: SrtsTextualMatchingHe
     tolerance: Int
   ): Boolean =
     matchingBlocks.forall { case (baseBlock, otherBlock) =>
-      matchesWithShift(baseBlock.start, otherBlock.end,  shift, tolerance) &&
+      matchesWithShift(baseBlock.start, otherBlock.start,  shift, tolerance) &&
       matchesWithShift(baseBlock.end, otherBlock.end, shift, tolerance)
     }
 

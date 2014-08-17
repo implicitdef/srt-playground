@@ -5,6 +5,7 @@ import java.lang.Math._
 import com.github.mtailor.srtdissector.Vocabulary.{Srt, SubtitleBlock}
 import com.github.mtailor.srtplayground.analysis.SrtsTextualMatchingHelper.{TextualMatchingParameters, SrtsTextualMatchingResult}
 import org.apache.commons.lang3.StringUtils
+import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 
 object SrtsTextualMatchingHelper {
@@ -40,7 +41,7 @@ class SrtsTextualMatchingHelper {
     val aMax = min(a.length, params.blocksToConsiderFromBeginning)
     val bMax = min(b.length, params.blocksToConsiderFromBeginning)
     var bIdx = 0
-    val res = scala.collection.mutable.ArrayBuffer[(SubtitleBlock, SubtitleBlock)]()
+    val res = ListBuffer[(SubtitleBlock, SubtitleBlock)]()
     //iterate over a
     for (aIdx <- 0 until aMax) {
       breakable {

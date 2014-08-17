@@ -2,8 +2,7 @@ package com.github.mtailor.srtplayground.actors
 
 import akka.actor.Actor
 import akka.pattern.ask
-import com.github.mtailor.srtplayground.ActorPaths
-import com.github.mtailor.srtplayground.helpers.StandardTimeout
+import com.github.mtailor.srtplayground.helpers.{ActorPaths, StandardTimeout}
 import org.jsoup.Jsoup
 import spray.http.HttpResponse
 

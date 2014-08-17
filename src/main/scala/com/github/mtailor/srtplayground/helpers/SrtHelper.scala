@@ -24,7 +24,7 @@ class SrtHelper extends LazyLogging {
     srt
       .zipWithIndex
       .filterNot { case (block, i) =>
-        isIndexInHeadOrTail(srt, i, 3) &&
+        isIndexInHeadOrTail(srt, i, 50) &&
         isLikelyGarbage(block)
       }
       .map(_._1)

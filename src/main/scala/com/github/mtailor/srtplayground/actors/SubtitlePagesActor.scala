@@ -4,13 +4,12 @@ import java.nio.file.Files._
 import java.nio.file.Path
 
 import akka.actor.Actor
-import akka.pattern.{ask, pipe}
-import com.github.mtailor.srtplayground.ActorPaths
-import com.github.mtailor.srtplayground.helpers.StandardTimeout
+import akka.pattern.ask
+import com.github.mtailor.srtplayground.helpers.{ActorPaths, StandardTimeout}
+import com.github.mtailor.srtplayground.helpers.VariousConstants._
+
 import org.jsoup.Jsoup
 import spray.http.HttpResponse
-
-import scala.concurrent.Future
 
 // handle the page on subscene dedicated to a subtitle
 // hits it and download the subtitle, before sending it to the newSubtitlesManagerActor
@@ -29,7 +28,7 @@ class SubtitlePagesActor extends Actor with StandardTimeout {
             .mapTo[HttpResponse]
             .foreach { response =>
               // write the zip in a file
-              val zipPath = createTempFile(null, null)
+              val zipPath = createTempFile(tempFilesPrefix, tempFilesPrefix)
               write(zipPath, response.entity.data.toByteArray)
               // ask to the unzipper
               val unzipper = actorSelection(ActorPaths.unzipperActor)

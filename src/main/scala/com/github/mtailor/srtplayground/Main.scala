@@ -1,8 +1,10 @@
 package com.github.mtailor.srtplayground
 
-import akka.actor.{Props, ActorSystem}
+import akka.actor.{ActorSystem, Props}
+import com.github.mtailor.srtplayground.actors.NewSubtitlesManagerActor.SubtitlesDumpingSignal
 import com.github.mtailor.srtplayground.actors._
-import com.github.mtailor.srtplayground.helpers.{StringsComparisonHelper, SrtHelper, BasicClusteringHelper}
+import com.github.mtailor.srtplayground.analysis.{SrtFullComparisonHelper, SrtsTextualMatchingHelper}
+import com.github.mtailor.srtplayground.helpers.{BasicClusteringHelper, SrtHelper}
 
 import scala.concurrent.duration._
 
@@ -21,12 +23,13 @@ object Main extends App {
     Props(classOf[NewSubtitlesManagerActor],
       new BasicClusteringHelper,
       new SrtHelper,
-      new StringsComparisonHelper
+      new SrtFullComparisonHelper(
+        new SrtsTextualMatchingHelper
+      )
     ), name = "newSubtitlesManagerActor")
 
   mediaPagesActor ! "captain-america-the-winter-soldier"
 
-  system.scheduler.schedule(5.seconds, 10.seconds, newSubtitlesManagerActor, SubtitlesAnalysisSignal)
+  system.scheduler.schedule(5.seconds, 10.seconds, newSubtitlesManagerActor, SubtitlesDumpingSignal)
 
-  //TODO améliorer la suppression de fichiers pour qu'un maximum de choses soit supprimées
 }
