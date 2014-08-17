@@ -2,19 +2,18 @@ package com.github.mtailor.srtplayground.helpers
 
 import java.io.{FileInputStream, File}
 
+
 import com.github.mtailor.srtdissector.SrtDissector
 import com.github.mtailor.srtdissector.Vocabulary._
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.util.Try
+
 
 class SrtHelper extends LazyLogging {
 
-  def readSrt(f: File): Srt = {
-    val srt = clean(SrtDissector(new FileInputStream(f)).getOrElse(
-      throw new RuntimeException("Couldn't parse the file " + f)
-    ))
-    srt
-  }
+  def readSrt(f: File): Try[Srt] =
+    SrtDissector(new FileInputStream(f)).map(clean)
 
   def firstChars(srt: Srt, nbChars: Int): String =
     srt.flatMap(_.lines).mkString("\n").take(nbChars)

@@ -14,7 +14,7 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.2"
 
 libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.3.2"
 
-libraryDependencies += "com.github.mtailor" %% "srt-dissector" % "0.1.1"
+libraryDependencies += "com.github.mtailor" %% "srt-dissector" % "0.1.2"
 
 libraryDependencies += "org.specs2" %% "specs2" % "2.3.12" % Test
 

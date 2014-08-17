@@ -3,14 +3,11 @@ package com.github.mtailor.srtplayground.actors
 import java.nio.file.Files._
 import java.nio.file.{Path, StandardCopyOption}
 
-import akka.actor.{Actor, ActorLogging}
-import com.github.mtailor.srtplayground.helpers.ActorPaths
-import com.github.mtailor.srtplayground.helpers.PathConversions._
-import com.github.mtailor.srtplayground.helpers.VariousConstants._
+import com.github.mtailor.srtplayground.actors.MonitoringActor.SubtitleProcessFailure
+import com.github.mtailor.srtplayground.helpers.BaseActor
 import net.lingala.zip4j.core.ZipFile
 
-class UnzipperActor extends Actor with ActorLogging {
-  import context._
+class UnzipperActor extends BaseActor {
   override def receive = {
     //unzip the given zip and places the contained file
     //at a temporary location, which is sent back in an Option
@@ -28,11 +25,12 @@ class UnzipperActor extends Actor with ActorLogging {
           Some(targetPath)
         } else {
           log.warning(s"The zip $zipPath contained less or more than 1 file, or that file was a directory")
+          monitoringActor ! SubtitleProcessFailure
           None
         }
       }
       //delete the temp dir
-      actorSelection(ActorPaths.filesDeletionActor) ! tempDir
+      filesDeletionActor ! tempDir
     }
   }
 

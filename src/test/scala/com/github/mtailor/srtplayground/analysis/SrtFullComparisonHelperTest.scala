@@ -3,14 +3,15 @@ package com.github.mtailor.srtplayground.analysis
 import java.io.File
 
 import com.github.mtailor.srtplayground.analysis.SrtFullComparisonHelper._
-import com.github.mtailor.srtplayground.helpers.{SrtHelper, StandardParameters}
+import com.github.mtailor.srtplayground.helpers.{BaseActor, SrtHelper}
 import org.specs2.mutable.Specification
 
-class SrtFullComparisonHelperTest extends Specification with StandardParameters {
+class SrtFullComparisonHelperTest extends Specification {
 
+  implicit val params = BaseActor.comparisonParameters
   def compare(base: String, other: String) = {
     def parse(s: String) =
-      new SrtHelper().readSrt(new File(getClass.getClassLoader.getResource(s).toURI))
+      new SrtHelper().readSrt(new File(getClass.getClassLoader.getResource(s).toURI)).get
     new SrtFullComparisonHelper(new SrtsTextualMatchingHelper).compare(parse(base), parse(other))
   }
 

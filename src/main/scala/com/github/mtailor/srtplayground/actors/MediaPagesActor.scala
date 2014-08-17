@@ -1,30 +1,28 @@
 package com.github.mtailor.srtplayground.actors
 
-import akka.actor.Actor
 import akka.pattern.ask
-import com.github.mtailor.srtplayground.helpers.{ActorPaths, StandardTimeout}
+import com.github.mtailor.srtplayground.actors.MonitoringActor.DownloadsStarted
+import com.github.mtailor.srtplayground.helpers.BaseActor
 import org.jsoup.Jsoup
 import spray.http.HttpResponse
 
-import scala.collection.Iterable
 import scala.collection.JavaConverters._
 
-class MediaPagesActor extends Actor with StandardTimeout {
-  import context._
+class MediaPagesActor extends BaseActor {
   override def receive = {
     case movieNameInUrl: String =>
-      val httpActor = actorSelection(ActorPaths.subsceneHttpCallsActor)
-      val subtitlePagesActor = actorSelection(ActorPaths.subtitlePagesActor)
-      (httpActor ? s"/subtitles/$movieNameInUrl")
+      (subsceneHttpCallsActor ? s"/subtitles/$movieNameInUrl")
         .mapTo[HttpResponse]
         .foreach { response =>
           // find all links
           extractSubtitleUrlsOfMediaPage(response.entity.asString) match {
             case Seq() => throw new RuntimeException(s"0 subtitle found for $movieNameInUrl")
-            case urls => urls.foreach { url =>
-              // and send them
-              subtitlePagesActor ! url
-            }
+            case urls =>
+              monitoringActor ! DownloadsStarted(urls.size)
+              urls.foreach { url =>
+                // and send them
+                subtitlePagesActor ! url
+              }
           }
         }
   }

@@ -1,13 +1,12 @@
 package com.github.mtailor.srtplayground.actors
 
-import java.nio.file.{Files, Path}
-import com.github.mtailor.srtplayground.helpers.PathConversions._
+import java.nio.file.Path
 
-import akka.actor.{ActorLogging, Actor}
+import com.github.mtailor.srtplayground.helpers.BaseActor
 import org.apache.commons.io.FileUtils
 
 
-class FilesDeletionActor extends Actor with ActorLogging {
+class FilesDeletionActor extends BaseActor {
 
   override def receive = {
     case toDelete: Path => {
