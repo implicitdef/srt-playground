@@ -12,7 +12,6 @@ trait StandardParameters extends  {
       0.85
     ),
     0.85,
-    //TODO voir pourquoi ce parametre ne marche pas comme attendu ??
     1000
   )
 

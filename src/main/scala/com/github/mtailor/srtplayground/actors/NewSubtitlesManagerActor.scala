@@ -10,6 +10,7 @@ import com.github.mtailor.srtplayground.analysis.SrtFullComparisonHelper.{ZeroSh
 import com.github.mtailor.srtplayground.helpers.PathConversions._
 import com.github.mtailor.srtplayground.helpers._
 
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map => MutableMap}
 import scala.util.control.NonFatal
 
@@ -40,9 +41,10 @@ class NewSubtitlesManagerActor(
       }
     case SubtitlesDumpingSignal =>
       log.info("----------------------")
-      log.info(s"-Found ${files.size} textual variations from ${files.flatMap(_._2).flatMap(_._2).size} files ")
+      val allPaths = files.map(_._2).flatten.flatMap(_._2)
+      log.info(s"-Found ${files.size} textual variations from ${allPaths.size} files ")
       files.foreach { case (_, mapByShifts) =>
-        log.info(s"--A group got ${mapByShifts.size} different shifts, for ${mapByShifts.flatMap(_._2).size} files")
+        log.info(s"--A variation got ${mapByShifts.size} different shifts, for ${mapByShifts.flatMap(_._2).size} files")
         mapByShifts foreach { case (shift, paths) =>
           log.info(s"---The shift $shift got ${paths.size} files : $paths")
         }
