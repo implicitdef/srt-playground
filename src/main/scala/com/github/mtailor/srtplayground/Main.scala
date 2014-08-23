@@ -28,6 +28,6 @@ object Main extends App {
     ), name = "subtitlesClassifierActor")
 
   //TODO rajouter support des séries, avec filtres sur l'episode
-  mediaPagesActor ! "game-of-thrones-first-season"
+  mediaPagesActor ! "godzilla"
 
 }
